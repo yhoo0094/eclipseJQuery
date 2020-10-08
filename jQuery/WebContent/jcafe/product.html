@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>product.html</title>
+<script src="../js/jquery-3.5.1.min.js"></script>
+<script>
+		$(document).ready(function() {
+			//데이터조회한 결과를 화면에 table로 보여주기
+			$.ajax({
+				url:'../GetProductListJsonServlet', //전체 데이터를 조회해서 결과를 json파일로 만들어주는 서블릿(페이지)
+				dataType: 'json', //json타입을 object타입으로 바꿔줌(방법1)
+				success: function(result){
+					//let data = JSON.parse(result); //json타입을 object타입으로 바꿔줌(방법2)
+					let data = result;
+					
+					//테이블 만들어서 화면에 보여주기
+					let fields = ['itemNo', 'item', 'price', 'content', 'image']
+					let table = $('<table />').attr({'id':'tbl', 'border':1}).css('border-collapse', 'collapse');
+					
+					//th만들기
+					let tr = $('<tr />');
+					for(field of fields) {
+						tr.append($('<th />').html(field));
+					}
+					table.append(tr);
+					
+					$(data).each((idx, obj) => {
+						tr = $('<tr />');
+						//for(field in obj) { //모든 필드 보여주기
+					    for(field of fields) { //fields에 있는 필드만 보여주기 
+								if(field == 'itemNo'){
+									let atag = $('<a />').attr('href', 'item.jsp?itemNo=' +obj.itemNo)
+														 .html(obj[field])
+									tr.append($('<td />').html(atag));
+								} else {
+									tr.append($('<td />').html(obj[field]));
+								}
+							}
+						table.append(tr);
+					});
+					
+					$('#showResult').append(table);
+				},
+				error: function(result){
+					console.log(result);
+				}
+			});
+			
+			$('#save').on('click', function(event) {
+				event.preventDefault();
+				$.ajax({
+					url: $('#frm').attr('action'),// ../PostProductServlet
+					type: 'post',
+					data: $('#frm').serialize(), //모든 name필드값을 ket:value로 받는다
+					success: function(a,b) {
+						console.log(a,b);
+						//alert('OK');
+						
+					//수정부분
+					
+					let tr = $('<tr />');
+					let td = $('<td />');
+					
+					let atag = $('<a />').attr('href', 'item.jsp?itemNo=' + $('input[name="itemNo"]').val())
+					 .html($('input[name="itemNo"]').val())
+					tr.append($('<td />').html(atag));
+					
+					tr.append($('<td />').html($('input[name="item"]').val()));
+					tr.append($('<td />').html($('input[name="price"]').val()));
+					tr.append($('<td />').html($('input[name="content"]').val()));
+					tr.append($('<td />').html($('input[name="image"]').val()));
+					
+					$('#tbl').append(tr);
+					$('#showResult').append($('#tbl'));
+					
+					//수정부분 끝
+					
+					},
+					error: function(a,b) {
+						console.log(a,b);
+					}
+				});
+		});
+		});
+		function file_open() {
+			window.open("upload.jsp", "upload", "width=300 height=200 left=300 top=30");
+		};
+	</script>
+</head>
+<body>
+	<form action="../PostProductServlet" id="frm" method="post">
+		<table border="1">
+			<tr>
+				<td>Item No</td>
+				<td><input type="text" name="itemNo" value="bean_009"></td>
+			</tr>
+			<tr>
+				<td>Item</td>
+				<td><input type="text" name="item" value="콜롬비아 원두"></td>
+			</tr>
+			<tr>
+				<td>Category</td>
+				<td><input type="text" name="category" value="bean"></td>
+			</tr>
+			<tr>
+				<td>Price</td>
+				<td><input type="text" name="price" value="4300"></td>
+			</tr>
+			<tr>
+				<td>Content</td>
+				<td><input type="text" name="content" value="콜롬비아산 맛있는 원두입니다."></td>
+			</tr>
+			<tr>
+				<td>Like It</td>
+				<td><input type="text" name="likeIt" value="4.5"></td>
+			</tr>
+			<tr>
+				<td>Image</td>
+				<td><input type="text" name="image"> <input
+					type="button" value="파일첨부" onclick="file_open()"></td>
+			</tr>
+			<tr align="center">
+				<td colspan="2">
+					<button id="save">Save</button>
+					<button id="cancel">Cancel</button>
+				</td>
+			</tr>
+		</table>
+	</form>
+	<div style="height: 20px;"></div>
+	<div id="showResult"></div>
+</body>
+</html>
